@@ -1,55 +1,37 @@
-# ENV['RAILS_ENV'] ||= 'development'
-# require_relative '../config/environment'
 require 'csv'
-require 'httparty'
+# require 'httparty'
+require 'open-uri'
 require 'nokogiri'
+require 'selenium-webdriver'
 
 class Scraper
-  PokemonProduct = Struct.new(:url, :image, :name, :price)
+  all_plants = Struct.new(:common_name, :scientific_name, :family, :mature_height)
+  def natives
+    plant_url = 'http://coloradoplants.jeffco.us/plant/details/874'
 
-  def pokemon
-    response = HTTParty.get("https://scrapeme.live/shop/", {
-      headers: {
-        "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
-      },
-    })
+    driver = Selenium::WebDriver.for :chrome
+    driver.get(plant_url)
 
-    document = Nokogiri::HTML(response.body)
-    html_products = document.css("li.product")
-    pokemon_products = []
+    # driver.find_element(class: 'ng-binding').text
+    # # this will return
+    # "BLUE ELDERBERRY - Sambucus caerulea"
 
-    # iterating over the list of HTML products
-    html_products.each do |html_product|
-      # extracting the data of interest
-      # from the current product HTML element
-      url = html_product.css("a").first.attribute("href").value
-      image = html_product.css("img").first.attribute("src").value
-      name = html_product.css("h2").first.text
-      price = html_product.css("span").first.text
+    # a = driver.find_elements(:tag_name, "a").map {|link| link.href}
+    require 'pry'; binding.pry
 
-      # storing the scraped data in a PokemonProduct object
-      pokemon_product = PokemonProduct.new(url, image, name, price)
 
-      # adding the PokemonProduct to the list of scraped objects
-      pokemon_products.push(pokemon_product)
-    end
 
-    csv_headers = ["url", "image", "name", "price"]
 
-    # Use Rails.root to get the project root directory
-    # require 'pry'; binding.pry
-    file = "../data/pokemon.csv"
 
-    CSV.open(file, 'w', write_headers: true, headers: csv_headers) do |csv|
-      # adding each pokemon_product as a new row
-      # to the output CSV file
-      pokemon_products.each do |pokemon_product|
-        # require 'pry'; binding.pry
-        csv << pokemon_product
-      end
-    end
+
+    # csv_headers = ["common_name", "scientific_name", "family", "mature_height"]
+    # file = "../data/pokemon.csv"
+
+    # CSV.open(file, 'w', write_headers: true, headers: csv_headers) do |csv|
+    #   csv << all_natives
+    # end
   end
-
-  scrap = Scraper.new
-  p scrap.pokemon
+  scraper = Scraper.new
+  p scraper.natives
 end
+
